@@ -1,0 +1,22 @@
+{
+  "name": "vim-js-typescript-completion",
+  "version": "0.0.1",
+  "description": "A js plugin implementation of JS omnicompletion, using the typescript language services",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "MIT",
+  "bin": {
+    "testApp": "./lib/index.js"
+  },
+  "devDependencies": {
+    "gulp": "git://github.com/gulpjs/gulp.git#4.0",
+    "gulp-cli": "git://github.com/gulpjs/gulp-cli#4.0",
+    "gulp-typescript": "^2.12.0"
+  },
+  "dependencies": {
+    "typescript": "^1.8.7"
+  }
+}

@@ -58,11 +58,11 @@ export class TypeScriptProject implements ITypeScriptProject {
 
         console.log("get completions called with arguments"+ JSON.stringify(arguments));
         var completions = this._services.getCompletionsAtPosition(fileFullPath, byteOffset);
-        console.log("COMPLETIONS DERP: " +  completions);
 
         if(!completions || !completions.entries)
             return null;
 
+        console.log("COMPLETIONS DERP: " +  completions.entries.length);
         var ret = [];
         completions.entries.forEach((entry) => {
             ret.push(entry.name);

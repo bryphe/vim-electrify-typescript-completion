@@ -8,12 +8,10 @@ import * as tspm from "./TypeScriptProjectManager"
 
 var autoCompleter = {
     getCompletions: (args) => {
-        return [
-            { word: "alpha"},
-            { word: "beta"},
-            { word: "charlie"},
-            { word: "delta"}
-        ];
+        console.log(JSON.stringify(args));
+            var project = tspm.getProjectFromFile(args.currentBuffer);
+        var completions = project.getCompletions(args.currentBuffer, null, args.byte);
+        return completions;
     }
 };
 
@@ -56,5 +54,5 @@ vim.addCommand("TSGetCompletions", (args) => {
     var project = tspm.getProjectFromFile(args.currentBuffer);
 
     var completions = project.getCompletions(args.currentBuffer, null, args.byte);
-    console.log(completions);
+    console.log("Completion count: " + completions.length);
 });

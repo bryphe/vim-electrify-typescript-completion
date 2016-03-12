@@ -22,6 +22,7 @@ export interface ITypeScriptProject {
 }
 
 export class TypeScriptProject implements ITypeScriptProject {
+    private _host: TypeScriptLanguageServiceHost;
     private _services: ts.LanguageService;
     private _fileToFullPathMapping = {};
     
@@ -33,6 +34,8 @@ export class TypeScriptProject implements ITypeScriptProject {
         // TODO: Incrementally look for / add files?
         host.addFile("lib.d.ts", fs.readFileSync(libPath, "utf8"));
         host.addFile(rootPathName, fs.readFileSync(rootPathName, "utf8"));
+
+        this._host = host;
 
         this._fileToFullPathMapping["lib.d.ts"] = libPath;
     }
@@ -52,7 +55,20 @@ export class TypeScriptProject implements ITypeScriptProject {
     }
 
     public getCompletions(fileFullPath: string, incrementalEdits: string[], byteOffset: number): ICompletionInfo[] {
-        return null;
+
+        console.log("get completions called with arguments"+ JSON.stringify(arguments));
+        var completions = this._services.getCompletionsAtPosition(fileFullPath, byteOffset);
+        console.log("COMPLETIONS DERP: " +  completions);
+
+        if(!completions || !completions.entries)
+            return null;
+
+        var ret = [];
+        completions.entries.forEach((entry) => {
+            ret.push(entry.name);
+        });
+
+        return ret;
     }
 
     private _getFullPath(file: string): string {

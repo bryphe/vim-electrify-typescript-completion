@@ -6,6 +6,18 @@ import * as ts from "typescript";
 
 import * as tspm from "./TypeScriptProjectManager"
 
+var autoCompleter = {
+    getCompletions: (args) => {
+        return [
+            { word: "alpha"},
+            { word: "beta"},
+            { word: "charlie"},
+            { word: "delta"}
+        ];
+    }
+};
+
+vim.addOmniCompleter(autoCompleter);
 
 vim.addCommand("TSDefinition", (args) => {
 
@@ -15,8 +27,7 @@ vim.addCommand("TSDefinition", (args) => {
     console.log(def);
     
     if(def) {
-
-    vim.exec(":e " + def.fileName + " | " + "goto " + def.byteOffset);
+        vim.exec(":e " + def.fileName + " | " + "goto " + def.byteOffset);
     }
 
     // var host = new TypeScriptLanguageServiceHost();
@@ -37,4 +48,13 @@ vim.addCommand("TSDefinition", (args) => {
 
     // console.log(JSON.stringify(completions));
 
+});
+
+vim.addCommand("TSGetCompletions", (args) => {
+    console.log("TSGETCOMPLETIONS!");
+    
+    var project = tspm.getProjectFromFile(args.currentBuffer);
+
+    var completions = project.getCompletions(args.currentBuffer, null, args.byte);
+    console.log(completions);
 });

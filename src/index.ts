@@ -1,64 +1,40 @@
 import path = require("path");
 import fs = require("fs");
 
+declare var vim;
 import * as ts from "typescript";
 
-    var libPath = path.join(__dirname, "..", "node_modules", "typescript", "lib", "lib.d.ts");
-class TypeScriptLanguageServiceHost implements ts.LanguageServiceHost {
-    private _files: { [filename: string]: { file: ts.IScriptSnapshot; ver: number} } = {};
+import * as tspm from "./TypeScriptProjectManager"
 
-    public getScriptFileNames(): string[] {
-        var names: string[] = [];
-        for(var name in this._files) {
-            if(this._files.hasOwnProperty(name)) {
-                names.push(name);
-            }
-        }
 
-        console.log("getScriptFileNames:" + names);
-        return names;
+vim.addCommand("TSDefinition", (args) => {
+
+    var project = tspm.getProjectFromFile(args.currentBuffer);
+
+    var def = (project.getDefinition(args.currentBuffer, args.byte));
+    console.log(def);
+    
+    if(def) {
+
+    vim.exec(":e " + def.fileName + " | " + "goto " + def.byteOffset);
     }
 
-    public getScriptVersion(fileName: string): string {
-        console.log("Getting script version: " + fileName);
-        return this._files[fileName].ver.toString();
-    }
+    // var host = new TypeScriptLanguageServiceHost();
+    // var services = ts.createLanguageService(host, ts.createDocumentRegistry());
 
-    public getScriptSnapshot(fileName: string): ts.IScriptSnapshot {
-        console.log("Getting snapshot: " + fileName);
-        return this._files[fileName].file;
-    }
+    // host.addFile("lib.d.ts", fs.readFileSync(libPath, "utf8"));
+    // host.addFile(args.currentBuffer, fs.readFileSync(args.currentBuffer, "utf8"));
 
-    public getCompilationSettings(): ts.CompilerOptions {
-        return ts.getDefaultCompilerOptions();
-    }
+    // var definition = services.getDefinitionAtPosition(args.currentBuffer, args.byte);
 
-    public getCurrentDirectory(): string {
-        return "";
-    }
+    // if(definition) {
+    //     console.log(JSON.stringify(definition));
+    // } else {
+    //     vim.echo("TS: Unable to locate definition.");
+    // }
 
-    public getDefaultLibFileName(options): string {
-        return "lib";
-    }
+    // var completions = services.getCompletionsAtPosition(args.currentBuffer, args.byte);
 
-    public addFile(fileName: string, body: string): void {
-        var snap = ts.ScriptSnapshot.fromString(body);
-        snap.getChangeRange = _ => undefined;
-        var existing = this._files[fileName];
-        if(existing) {
-            this._files[fileName].ver++;
-            this._files[fileName].file = snap;
-        } else {
-            this._files[fileName] = { ver: 1, file: snap };
-        }
-    }
+    // console.log(JSON.stringify(completions));
 
-}
-console.log("TYPESCRIPT PLUGIN");
-var host = new TypeScriptLanguageServiceHost();
-var services = ts.createLanguageService(host, ts.createDocumentRegistry());
-
-host.addFile("lib.d.ts", fs.readFileSync(libPath, "utf8"));
-host.addFile("testfile.ts", "var a = 1; a.toP");
-console.log(JSON.stringify(services.getQuickInfoAtPosition("testfile.ts", 11)));
-console.log(JSON.stringify(services.getCompletionsAtPosition("testfile.ts", 16)));
+});

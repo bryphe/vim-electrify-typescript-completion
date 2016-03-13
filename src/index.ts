@@ -26,6 +26,7 @@ vim.addOmniCompleter(autoCompleter);
 vim.addCommand("TSDefinition", (args) => {
 
     var project = tspm.getProjectFromFile(args.currentBuffer);
+    project.updateFile(args.currentBuffer, fs.readFileSync(args.currentBuffer, "utf8"));
 
     var def = (project.getDefinition(args.currentBuffer, args.byte));
     console.log(def);

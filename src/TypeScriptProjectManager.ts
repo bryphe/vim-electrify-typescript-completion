@@ -7,9 +7,18 @@ export function getProjectFromFile(fileName: string): tsp.ITypeScriptProject {
 
     var rootPath = getProjectRootPathFromFile(fileName);
 
-    var resolver = new tspr.SingularProjectResolver(fileName);
+    var existingProject = projectCache[rootPath];
 
-    return new tsp.TypeScriptProject(fileName, resolver);
+    var project;
+    if(existingProject) {
+        project = existingProject;
+    } else {
+        var resolver = new tspr.SingularProjectResolver(fileName);
+        project = new tsp.TypeScriptProject(fileName, resolver);
+        projectCache[rootPath] = project;
+    }
+
+    return project;
 }
 
 function getProjectRootPathFromFile(fileName: string): string {

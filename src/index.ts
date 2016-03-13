@@ -10,6 +10,12 @@ var autoCompleter = {
     getCompletions: (args) => {
         console.log(JSON.stringify(args));
             var project = tspm.getProjectFromFile(args.currentBuffer);
+
+            if(args.tempFile) {
+                console.log("Temp file specified");
+
+                project.updateFile(args.currentBuffer, fs.readFileSync(args.tempFile, "utf8"));
+            }
         var completions = project.getCompletions(args.currentBuffer, null, args.byte);
         return completions;
     }

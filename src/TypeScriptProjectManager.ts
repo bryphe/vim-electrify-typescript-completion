@@ -19,6 +19,8 @@ export interface ICompletionInfo {
 export interface ITypeScriptProject {
     getDefinition(fileFullPath: string, byteOffset: number);
     getCompletions(fileFullPath: string, incrementalEdits: string[], byteOffset: number): ICompletionInfo[];
+
+    updateFile(fileFullPath: string, text: string): void;
 }
 
 export class TypeScriptProject implements ITypeScriptProject {
@@ -52,6 +54,10 @@ export class TypeScriptProject implements ITypeScriptProject {
             fileName: this._getFullPath(definition.fileName),
             byteOffset: definition.textSpan.start + 1
         };
+    }
+
+    public updateFile(fileFullPath: string, text: string): void {
+        this._host.addFile(fileFullPath, text);
     }
 
     public getCompletions(fileFullPath: string, incrementalEdits: string[], byteOffset: number): ICompletionInfo[] {

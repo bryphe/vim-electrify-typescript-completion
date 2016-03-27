@@ -3,7 +3,8 @@
         "module": "commonjs",
         "preserveConstEnums": true,
         "outDir": "../lib",
-        "sourceMap": true
+        "sourceMap": true,
+        "target": "ES5"
     },
     "exclude": [
         "node_modules",

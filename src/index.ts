@@ -11,6 +11,34 @@ import * as tshost from "./TypeScriptServerHost"
 
 var host = new tshost.TypeScriptServerHost();
 
+var cachedContents = "";
+
+var autoCompleter = {
+    onFileUpdate: (fileName: string, newContents: string) => {
+        cachedContents = newContents;
+        host.updateFile(fileName, newContents);
+    },
+
+    getCompletions: (args) => {
+        return host.getCompletions(args.currentBuffer, args.line, args.col).then((completionInfo) => {
+            // console.log(completionInfo);
+
+            return ["hello", "derp1", "derp2", "derp3"];
+        });
+        // log.verbose(JSON.stringify(args));
+        //     var project = tspm.getProjectFromFile(args.currentBuffer);
+
+        //     if(args.tempFile) {
+        //         log.verbose("Temp file specified");
+
+        //         project.updateFile(args.currentBuffer, fs.readFileSync(args.tempFile, "utf8"));
+        //     }
+        // var completions = project.getCompletions(args.currentBuffer, null, args.byte);
+    }
+};
+
+vim.addOmniCompleter(autoCompleter);
+
 // var autoCompleter = {
 //     getCompletions: (args) => {
 //         log.verbose(JSON.stringify(args));
@@ -26,15 +54,71 @@ var host = new tshost.TypeScriptServerHost();
 //     }
 // };
 
-// vim.addOmniCompleter(autoCompleter);
+vim.on("BufEnter", (args) => {
+    host.openFile(args.currentBuffer);
+});
+
+vim.addCommand("TSSaveDebug", (args) => {
+    host.saveTo(args.currentBuffer, "C:/test-file.txt");
+});
+
+vim.addCommand("TSSuperDerp", (args) => {
+    host.updateFile(args.currentBuffer, "DERP");
+});
+
+vim.addCommand("TSSuperUpdate", (args) => {
+
+    host.updateFile(args.currentBuffer, cachedContents);
+});
 
 vim.addCommand("TSDefinition", (args) => {
-    host.openFile(args.currentBuffer);
     host.getTypeDefinition(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "|");
+        val = val[0];
+        vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);
     });
+});
+
+vim.addCommand("TSCompletions", (args) => {
+    host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
+        log.verbose("Completions: " + JSON.stringify(val));
+        // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
+    }, (err) => {
+        vim.echo("Error: " + err);
+    });
+});
+
+vim.addCommand("TSQuickInfo", (args) => {
+    host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
+        // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
+    }, (err) => {
+        vim.echo("Error: " + err);
+    });
+});
+
+vim.addCommand("TSErrors", (args) => {
+    host.getErrors(args.currentBuffer).then((val: any) => {
+        // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
+    }, (err) => {
+        vim.echo("Error: " + err);
+    });
+});
+
+vim.addCommand("TSDerp", (args) => {
+    host.getSignatureHelp(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
+        // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
+    }, (err) => {
+        vim.echo("Error: " + err);
+    });
+});
+
+vim.addCommand("TSProcessID", (args) => {
+    vim.echo(host.pid);
+});
+
+vim.addCommand("TSGetHostProcessID", (args) => {
+    vim.echo(process.pid);
 });
 
 // vim.addCommand("TSGetCompletions", (args) => {

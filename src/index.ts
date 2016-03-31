@@ -20,10 +20,15 @@ var autoCompleter = {
     },
 
     getCompletions: (args) => {
-        return host.getCompletions(args.currentBuffer, args.line, args.col).then((completionInfo) => {
+        return host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col) + 1).then((completionInfo) => {
             // console.log(completionInfo);
 
-            return ["hello", "derp1", "derp2", "derp3"];
+            // return ["hello", "derp1", "derp2", "derp3"];
+            //
+            // return completionInfo.map((completion) => { return { "word": completion.name, "menu": completion.kind }; });
+            return completionInfo.map((completion) => completion.name);
+        }, (err) => {
+            return [];
         });
         // log.verbose(JSON.stringify(args));
         //     var project = tspm.getProjectFromFile(args.currentBuffer);
@@ -91,6 +96,17 @@ vim.addCommand("TSCompletions", (args) => {
 
 vim.addCommand("TSQuickInfo", (args) => {
     host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
+        log.verbose("Quick info: " + JSON.stringify(val));
+        vim.echo(val.displayString);
+        // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
+    }, (err) => {
+        vim.echo("Error: " + err);
+    });
+});
+
+vim.addCommand("TSSignatureHelp", (args) => {
+    host.getSignatureHelp(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
+        log.verbose("Signature help" + JSON.stringify(val));
         // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);

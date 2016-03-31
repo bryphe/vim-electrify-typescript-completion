@@ -68,7 +68,7 @@ export class TypeScriptServerHost {
         });
     }
 
-    public getCompletions(fullFilePath: string, line: number, col: number): Promise<void> {
+    public getCompletions(fullFilePath: string, line: number, col: number): Promise<any> {
         return this._makeTssRequest<void>("completions", {
             file: fullFilePath,
             line: line,

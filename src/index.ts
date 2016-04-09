@@ -129,6 +129,16 @@ vim.addCommand("TSDerp", (args) => {
     });
 });
 
+vim.addCommand("TSNavigationBarItems", (args) => {
+    host._makeTssRequest<void>("navbar", {
+        file: args.currentBuffer
+    }).then((val: any) => {
+        console.log(JSON.stringify(val));
+    }, (err) => {
+        console.log("Error:" + err);
+    });
+});
+
 vim.addCommand("TSProcessID", (args) => {
     vim.echo(host.pid);
 });

@@ -20,7 +20,6 @@ export class TypeScriptServerHost {
         return this._tssProcess.pid;
     }
 
-
     constructor() {
         this._tssProcess = childProcess.spawn("node", [tssPath], {detached: true});
         console.log("Process ID: " + this._tssProcess.pid);
@@ -136,7 +135,15 @@ export class TypeScriptServerHost {
         });
     }
 
-    private _makeTssRequest<T>(commandName: string, args: any): Promise<T> {
+    public getDocumentHighlights(fullFilePath: string, lineNumber: number, offset: number): Promise<void> {
+        return this._makeTssRequest<void>("documentHighlights", {
+            file: fullFilePath,
+            line: lineNumber,
+            offset: offset
+        });
+    }
+
+    public _makeTssRequest<T>(commandName: string, args: any): Promise<T> {
         var seqNumber = this._seqNumber++;
         var payload = {
             seq: seqNumber,

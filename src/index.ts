@@ -25,8 +25,8 @@ var autoCompleter = {
 
             // return ["hello", "derp1", "derp2", "derp3"];
             //
-            // return completionInfo.map((completion) => { return { "word": completion.name, "menu": completion.kind }; });
-            return completionInfo.map((completion) => completion.name);
+            return completionInfo.map((completion) => { return { "word": completion.name, "menu": completion.kindModifiers + " " + completion.kind }; });
+            // return completionInfo.map((completion) => completion.name);
         }, (err) => {
             return [];
         });

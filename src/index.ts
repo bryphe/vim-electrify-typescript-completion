@@ -63,6 +63,24 @@ vim.on("BufEnter", (args) => {
     host.openFile(args.currentBuffer);
 });
 
+vim.on("CursorMoved", (args) => {
+    showQuickInfo(args);
+});
+
+vim.on("CursorMovedI", (args) => {
+    showQuickInfo(args);
+});
+
+function showQuickInfo(args) {
+
+    host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
+        log.verbose("Quick info: " + JSON.stringify(val));
+        var outputString = val.displayString;
+        vim.echohl(outputString, "PMenu");
+    });
+}
+
+
 vim.addCommand("TSSaveDebug", (args) => {
     host.saveTo(args.currentBuffer, "C:/test-file.txt");
 });

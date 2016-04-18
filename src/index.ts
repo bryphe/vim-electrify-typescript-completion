@@ -76,7 +76,7 @@ function showQuickInfo(args) {
     host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
         log.verbose("Quick info: " + JSON.stringify(val));
         var outputString = val.displayString;
-        vim.echohl(outputString, "PMenu");
+        vim.echo(outputString);
     });
 }
 

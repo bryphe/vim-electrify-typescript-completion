@@ -17,12 +17,11 @@ var autoCompleter = {
     onFileUpdate: (fileName: string, newContents: string) => {
         cachedContents = newContents;
         host.updateFile(fileName, newContents);
+        updateSyntaxHighlighting(fileName);
     },
 
     getCompletions: (args) => {
         return host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col) + 1).then((completionInfo) => {
-            // console.log(completionInfo);
-
             // return ["hello", "derp1", "derp2", "derp3"];
             //
             return completionInfo.map((completion) => { return { "word": completion.name, "menu": completion.kindModifiers + " " + completion.kind }; });
@@ -61,6 +60,7 @@ vim.addOmniCompleter(autoCompleter);
 
 vim.on("BufEnter", (args) => {
     host.openFile(args.currentBuffer);
+    updateSyntaxHighlighting(args.currentBuffer);
 });
 
 vim.on("CursorMoved", (args) => {
@@ -76,6 +76,7 @@ function showQuickInfo(args) {
     host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
         log.verbose("Quick info: " + JSON.stringify(val));
         var outputString = val.displayString;
+        outputString = outputString.split("\n").join(" ");
         vim.echo(outputString);
     });
 }
@@ -151,11 +152,64 @@ vim.addCommand("TSNavigationBarItems", (args) => {
     host._makeTssRequest<void>("navbar", {
         file: args.currentBuffer
     }).then((val: any) => {
+        log.info(JSON.stringify(val));
         console.log(JSON.stringify(val));
     }, (err) => {
         console.log("Error:" + err);
     });
 });
+
+vim.addCommand("TSSyntaxHighlight", (args) => {
+    log.info("Syntax highlight");
+
+    updateSyntaxHighlighting(args.currentBuffer);
+});
+
+function updateSyntaxHighlighting(file) {
+
+    host._makeTssRequest<void>("navbar", {
+        file: file
+    }).then((val: any) => {
+        var highlightDictionary = {};
+
+        getAllGroups().forEach((group) => {
+            highlightDictionary[group] = [];
+        });
+
+        createSyntaxHighlighting(val[0], highlightDictionary);
+        vim.setSyntaxHighlighting(highlightDictionary);
+        log.info("Setting syntax highlighting: " + JSON.stringify(highlightDictionary));
+    }, (err) => {
+        log.error(err);
+    });
+}
+
+function createSyntaxHighlighting(rootNavBarItem, highlightDictionary) {
+    if (!rootNavBarItem.childItems || !rootNavBarItem.childItems.length)
+        return;
+
+    rootNavBarItem.childItems.forEach((child) => {
+        var group = kindToHighlightGroup[child.kind];
+        if (group) {
+            highlightDictionary[group].push(child.text);
+        }
+
+        createSyntaxHighlighting(child.childItems, highlightDictionary);
+    });
+}
+
+var kindToHighlightGroup = {
+    var: "Identifier",
+    alias: "Include",
+    function: "Function",
+    method: "Function",
+    property: "Function",
+    class: "Type"
+};
+
+function getAllGroups() {
+    return Object.keys(kindToHighlightGroup).map((key) => kindToHighlightGroup[key]);
+}
 
 vim.addCommand("TSProcessID", (args) => {
     vim.echo(host.pid);
@@ -167,7 +221,7 @@ vim.addCommand("TSGetHostProcessID", (args) => {
 
 // vim.addCommand("TSGetCompletions", (args) => {
 //     console.log("TSGETCOMPLETIONS!");
-    
+
 //     var project = tspm.getProjectFromFile(args.currentBuffer);
 
 //     var completions = project.getCompletions(args.currentBuffer, null, args.byte);

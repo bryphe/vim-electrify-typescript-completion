@@ -41,6 +41,16 @@ var autoCompleter = {
     }
 };
 
+vim.on("BufferChanged", (args) => {
+    log.info("BufferChanged: " + JSON.stringify(args));
+    var fileName = args.fileName;
+    var newContents = args.newContents;
+    cachedContents = newContents;
+
+    host.updateFile(fileName, newContents);
+    updateSyntaxHighlighting(fileName);
+});
+
 vim.addOmniCompleter(autoCompleter);
 
 // var autoCompleter = {

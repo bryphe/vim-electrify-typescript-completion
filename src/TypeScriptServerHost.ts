@@ -21,7 +21,7 @@ export class TypeScriptServerHost {
     }
 
     constructor() {
-        this._tssProcess = childProcess.spawn("node", [tssPath], {detached: true});
+        this._tssProcess = childProcess.spawn("node", [tssPath], { detached: true });
         console.log("Process ID: " + this._tssProcess.pid);
 
         this._rl = readline.createInterface({
@@ -38,7 +38,7 @@ export class TypeScriptServerHost {
             // log.verbose("TSS - got line: " + msg);
             // log.verbose("msg.indexOf('{')" + msg.indexOf("{"))
 
-            if(msg.indexOf("{") === 0) {
+            if (msg.indexOf("{") === 0) {
                 this._parseResponse(msg);
             }
         });
@@ -84,9 +84,9 @@ export class TypeScriptServerHost {
 
         // updatedContents = updatedContents.split(os.EOL).join("");
         var promise = this._makeTssRequest<void>("open", {
-                file: fullFilePath,
-                fileContent: updatedContents
-            });
+            file: fullFilePath,
+            fileContent: updatedContents
+        });
 
         // var tmpFile = "C:/tempfile.txt";
 
@@ -152,7 +152,7 @@ export class TypeScriptServerHost {
             arguments: args
         };
 
-        var ret =  this._createDeferredPromise<T>();
+        var ret = this._createDeferredPromise<T>();
         this._seqToPromises[seqNumber] = ret;
 
         log.verbose("Sending request: " + JSON.stringify(payload));
@@ -168,8 +168,8 @@ export class TypeScriptServerHost {
         var seq = response["request_seq"];
         var success = response["success"];
 
-        if(typeof seq === "number") {
-            if(success) {
+        if (typeof seq === "number") {
+            if (success) {
                 this._seqToPromises[seq].resolve(response.body);
             } else {
                 this._seqToPromises[seq].reject(response.message);
@@ -191,4 +191,3 @@ export class TypeScriptServerHost {
     }
 
 }
-

@@ -1,44 +1,19 @@
 import path = require("path");
 import fs = require("fs");
 
+import Promise = require("bluebird");
+
 declare var vim;
 declare var log;
 
 import * as ts from "typescript";
 
 import * as tshost from "./TypeScriptServerHost"
+import * as omni from "./OmniCompleter"
 
 var host = new tshost.TypeScriptServerHost();
 
 var cachedContents = "";
-
-var autoCompleter = {
-    onFileUpdate: (fileName: string, newContents: string) => {
-        cachedContents = newContents;
-        host.updateFile(fileName, newContents);
-        updateSyntaxHighlighting(fileName);
-    },
-
-    getCompletions: (args) => {
-        return host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col) + 1).then((completionInfo) => {
-            // return ["hello", "derp1", "derp2", "derp3"];
-            //
-            return completionInfo.map((completion) => { return { "word": completion.name, "menu": completion.kindModifiers + " " + completion.kind }; });
-            // return completionInfo.map((completion) => completion.name);
-        }, (err) => {
-            return [];
-        });
-        // log.verbose(JSON.stringify(args));
-        //     var project = tspm.getProjectFromFile(args.currentBuffer);
-
-        //     if(args.tempFile) {
-        //         log.verbose("Temp file specified");
-
-        //         project.updateFile(args.currentBuffer, fs.readFileSync(args.tempFile, "utf8"));
-        //     }
-        // var completions = project.getCompletions(args.currentBuffer, null, args.byte);
-    }
-};
 
 vim.on("BufferChanged", (args) => {
     log.info("BufferChanged: " + JSON.stringify(args));
@@ -50,22 +25,7 @@ vim.on("BufferChanged", (args) => {
     updateSyntaxHighlighting(fileName);
 });
 
-vim.addOmniCompleter(autoCompleter);
-
-// var autoCompleter = {
-//     getCompletions: (args) => {
-//         log.verbose(JSON.stringify(args));
-//             var project = tspm.getProjectFromFile(args.currentBuffer);
-
-//             if(args.tempFile) {
-//                 log.verbose("Temp file specified");
-
-//                 project.updateFile(args.currentBuffer, fs.readFileSync(args.tempFile, "utf8"));
-//             }
-//         var completions = project.getCompletions(args.currentBuffer, null, args.byte);
-//         return completions;
-//     }
-// };
+vim.omniCompleters.register("typescript", new omni.OmniCompleter(host));
 
 vim.on("BufEnter", (args) => {
     host.openFile(args.currentBuffer);

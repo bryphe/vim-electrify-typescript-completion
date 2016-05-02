@@ -108,7 +108,7 @@ vim.addCommand("TSSuperUpdate", (args) => {
 vim.addCommand("TSDefinition", (args) => {
     host.getTypeDefinition(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
         val = val[0];
-        vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
+        vim.exec(":e! " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);
     });

@@ -94,7 +94,7 @@ vim.addCommand("TSQuickInfo", (args) => {
 
 vim.addCommand("TSSignatureHelp", (args) => {
     host.getSignatureHelp(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        log.verbose("Signature help" + JSON.stringify(val));
+        log.info("Signature help" + JSON.stringify(val));
         // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);

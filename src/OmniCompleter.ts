@@ -4,13 +4,19 @@ declare var log;
 
 import * as tshost from "./TypeScriptServerHost"
 
+interface CompletionContext {
+    col: number;
+    line: number;
+    currentCharacter: string;
+    previousCharacter: string;
+}
+
 export class OmniCompleter {
 
     private _host: tshost.TypeScriptServerHost;
 
     constructor(host: tshost.TypeScriptServerHost) {
         this._host = host;
-        this._
     }
 
     public getCompletions(eventContext): Promise<any> {
@@ -48,8 +54,18 @@ export class OmniCompleter {
                 log.error("Error during completion: " + err);
                 return null;
             });
+        } else if (currentCharacter == "(") {
+            return Promise.resolve(null);
+            // return Promise.resolve({
+            //     base: col -1,
+            //     line: eventContext.line,
+            //     items: [ "a", "b", "c"]
+            // });
         } else {
             return Promise.resolve(null);
         }
+
     }
+
+
 };

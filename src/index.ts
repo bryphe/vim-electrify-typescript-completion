@@ -76,12 +76,25 @@ vim.addCommand("TSDefinition", (args) => {
 
 vim.addCommand("TSCompletions", (args) => {
     host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        log.verbose("Completions: " + JSON.stringify(val));
+        log.info("Completions: " + JSON.stringify(val));
         // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);
     });
 });
+
+vim.addCommand("TSCompletionDetails", (args) => {
+    host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col))
+        .then((val: any) => {
+            var names = val.map((v) => v.name);
+            log.info("Names: " + JSON.stringify(names));
+
+            host.getCompletionDetails(args.currentBuffer, parseInt(args.line), parseInt(args.col), names)
+            .then((result => {
+                log.info("Completoins with details: " + JSON.stringify(result));
+            }))
+        });
+})
 
 vim.addCommand("TSQuickInfo", (args) => {
     host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {

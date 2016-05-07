@@ -4,11 +4,17 @@ declare var log;
 
 import * as tshost from "./TypeScriptServerHost"
 
+var DisplayPartsParser = require("./DisplayPartsParser");
+
 interface CompletionContext {
     col: number;
     line: number;
     currentCharacter: string;
     previousCharacter: string;
+}
+
+interface CompletionEntryDetails {
+    [name: string]: any;
 }
 
 export class OmniCompleter {
@@ -30,41 +36,146 @@ export class OmniCompleter {
         var previousCharacter = eventContext.lineContents[col - 3];
 
         if (currentCharacter == ".") {
-            return this._host.getCompletions(eventContext.currentBuffer, line, col).then((completionInfo) => {
-                var items = completionInfo.map((completion) => { return { "word": completion.name, "menu": completion.kindModifiers + " " + completion.kind }; });
-                return {
-                    base: col - 1,
-                    line: eventContext.line,
-                    items: items
-                };
-            }, (err) => {
-                log.error("Error during completion: " + err);
-                return null;
-            });
+            return this._getCompletions(eventContext.currentBuffer, line, col)
+                .then((items) => {
+                    return {
+                        base: col - 1,
+                        line: eventContext.line,
+                        items: items
+                    };
+                }, (err) => {
+                    log.error("Error during completion: " + err);
+                    return null;
+                });
         } else if (currentCharacter.match(/[a-z]/i) && !previousCharacter.match(/[a-z]/i)) {
-            return this._host.getCompletions(eventContext.currentBuffer, line, col).then((completionInfo) => {
-                var items = completionInfo.map((completion) => { return { "word": completion.name, "menu": completion.kindModifiers + " " + completion.kind }; });
-                items = items.filter((completion) => { return completion.word && completion.word[0] === currentCharacter });
-                return {
-                    base: col - 2,
-                    line: eventContext.line,
-                    items: items
-                };
-            }, (err) => {
-                log.error("Error during completion: " + err);
-                return null;
-            });
+            return this._getCompletions(eventContext.currentBuffer, line, col)
+                .then((items) => {
+                    items = items.filter((completion) => { return completion.word && completion.word[0] === currentCharacter });
+                    return {
+                        base: col - 2,
+                        line: eventContext.line,
+                        items: items
+                    };
+                }, (err) => {
+                    log.error("Error during completion: " + err);
+                    return null;
+                });
         } else if (currentCharacter == "(") {
-            return Promise.resolve(null);
-            // return Promise.resolve({
-            //     base: col -1,
-            //     line: eventContext.line,
-            //     items: [ "a", "b", "c"]
-            // });
+            return this._getSignatureHelp(eventContext.currentBuffer, line, col);
         } else {
             return Promise.resolve(null);
         }
 
+    }
+
+
+    private _getSignatureHelp(currentBuffer: string, line: number, col: number): Promise<any> {
+        var displayPartsParser = new DisplayPartsParser.DisplayPartsParser();
+
+        return this._host.getSignatureHelp(currentBuffer, line, col)
+            .then((help: any) => {
+                var ret = [];
+
+                if(help && help.items) {
+                    help.items.forEach((item) => {
+                        var prefixDisplayParts = displayPartsParser.convertToDisplayString(item.prefixDisplayParts);
+
+                        var parameterDisplayParts = [];
+                        var parameters = [];
+                        var snippet = "";
+                        var count = 1;
+
+                        item.parameters.forEach((parameter) => {
+                            parameterDisplayParts.push(displayPartsParser.convertToDisplayString(parameter.displayParts));
+                            parameters.push("${" + count.toString() + ":"  + parameter.name + "}");
+                            count++;
+                        });
+
+                        var suffixDisplayParts = displayPartsParser.convertToDisplayString(item.suffixDisplayParts);
+
+                        var snippet = parameters.join(", ");
+                        var pdText = parameterDisplayParts.join(", ");
+
+                        ret.push({
+                            menu: prefixDisplayParts + pdText + suffixDisplayParts,
+                            snippet: snippet
+                        });
+                    });
+                }
+
+                return {
+                    base: col,
+                    line: line,
+                    items: ret
+                };
+            });
+    }
+    
+
+    private _getCompletions(currentBuffer: string, line: number, col: number): Promise<any> {
+        var fullCompletionInfo = [];
+        var entryDetails: CompletionEntryDetails = {};
+        return this._host.getCompletions(currentBuffer, line, col)
+            .then((completionInfo) => this._mapCompletionValues(completionInfo))
+            .then((completionInfo) => fullCompletionInfo = completionInfo)
+            .then(() => this._getCompletionEntryDetails(currentBuffer, line, col, fullCompletionInfo))
+            .then((details) => entryDetails = details)
+            .then(() => this._augmentCompletions(fullCompletionInfo, entryDetails));
+    }
+
+    private _augmentCompletions(completionInfo: any, completionEntryDetails: CompletionEntryDetails): Promise<any> {
+
+        var displayPartsParser = new DisplayPartsParser.DisplayPartsParser();
+
+        var out = completionInfo.map(completion => {
+            var ret = {
+                "word": completion.word,
+                "menu": completion.menu
+            };
+
+            if(completionEntryDetails[completion.word]) {
+                ret["menu"] = displayPartsParser.convertToDisplayString(completionEntryDetails[completion.word]);
+            }
+
+            return ret;
+        });
+
+        return Promise.resolve(out);
+    }
+
+    private _getCompletionEntryDetails(currentBuffer: string, line: number, col: number, completionInfo: any): Promise<CompletionEntryDetails> {
+        var entryNames = completionInfo
+            .filter((c) => c.menu)
+            .map((c) => c.word);
+
+        if (entryNames.length > 25) {
+            return Promise.resolve({});
+        }
+
+        return this._host.getCompletionDetails(currentBuffer, line, col, entryNames)
+                .then((info) => {
+                    var ret = {};
+                    info.forEach((i) => {
+                        ret[i.name] = i.displayParts;
+                    });
+                    return ret;
+                });
+    }
+
+    private _mapCompletionValues(completionInfo): any {
+
+        return completionInfo.map((completion) => {
+            var kind = "";
+
+            if (completion.kind !== "warning") {
+                kind = "(" + completion.kind + ")"
+            }
+
+            return {
+                "word": completion.name,
+                "menu": kind
+            }
+        });
     }
 
 

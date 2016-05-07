@@ -26,6 +26,7 @@ vim.on("BufferChanged", (args) => {
 });
 
 vim.omniCompleters.register("typescript", new omni.OmniCompleter(host));
+vim.omniCompleters.register("javascript", new omni.OmniCompleter(host));
 
 vim.on("BufEnter", (args) => {
     host.openFile(args.currentBuffer);

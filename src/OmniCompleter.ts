@@ -134,7 +134,7 @@ export class OmniCompleter {
             };
 
             if(completionEntryDetails[completion.word]) {
-                ret["menu"] = displayPartsParser.convertToDisplayString(completionEntryDetails[completion.word]);
+                // ret["menu"] = displayPartsParser.convertToDisplayString(completionEntryDetails[completion.word]);
             }
 
             return ret;
@@ -148,7 +148,7 @@ export class OmniCompleter {
             .filter((c) => c.menu)
             .map((c) => c.word);
 
-        if (entryNames.length > 25) {
+        if (entryNames.length > 50) {
             return Promise.resolve({});
         }
 
@@ -156,7 +156,7 @@ export class OmniCompleter {
                 .then((info) => {
                     var ret = {};
                     info.forEach((i) => {
-                        ret[i.name] = i.displayParts;
+                        ret[i.name] = i.displayParts || [];
                     });
                     return ret;
                 });

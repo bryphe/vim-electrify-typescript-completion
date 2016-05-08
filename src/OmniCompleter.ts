@@ -134,7 +134,7 @@ export class OmniCompleter {
             };
 
             if(completionEntryDetails[completion.word]) {
-                // ret["menu"] = displayPartsParser.convertToDisplayString(completionEntryDetails[completion.word]);
+                ret["menu"] = displayPartsParser.convertToDisplayString(completionEntryDetails[completion.word]);
             }
 
             return ret;

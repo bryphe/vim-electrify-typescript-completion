@@ -1,4 +1,5 @@
 var gulp = require("gulp");
+var merge = require("merge2");
 var ts = require("gulp-typescript");
 
 var srcProject = ts.createProject("src\\tsconfig.json");
@@ -8,7 +9,7 @@ gulp.task("build:src", function() {
     var tsResult = srcProject.src() 
         .pipe(ts(srcProject));
 
-    return tsResult.js.pipe(gulp.dest("lib"));
+    return merge(tsResult.js.pipe(gulp.dest("lib")), tsResult.dts.pipe(gulp.dest("lib")));
 });
 
 gulp.task("build:test", function() {

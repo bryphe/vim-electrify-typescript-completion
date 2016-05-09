@@ -3,6 +3,7 @@
         "module": "commonjs",
         "preserveConstEnums": true,
         "outDir": "../lib",
+        "declaration": true,
         "sourceMap": true,
         "target": "ES5"
     },

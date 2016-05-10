@@ -10,6 +10,7 @@ import * as ts from "typescript";
 
 import * as tshost from "./TypeScriptServerHost"
 import * as omni from "./OmniCompleter"
+import {SyntaxHighlighter} from "./SyntaxHighlighter"
 
 var host = new tshost.TypeScriptServerHost();
 
@@ -153,45 +154,17 @@ function updateSyntaxHighlighting(file) {
     host._makeTssRequest<void>("navbar", {
         file: file
     }).then((val: any) => {
-        var highlightDictionary = {};
 
-        getAllGroups().forEach((group) => {
-            highlightDictionary[group] = [];
-        });
+        log.info("Got highlighting result: " + JSON.stringify(val));
 
-        createSyntaxHighlighting(val[0], highlightDictionary);
-        vim.setSyntaxHighlighting(highlightDictionary);
-        log.info("Setting syntax highlighting: " + JSON.stringify(highlightDictionary));
+        var syntaxHighlighter = new SyntaxHighlighter();
+        var highlighting = syntaxHighlighter.getSyntaxHighlighting(val);
+
+        vim.setSyntaxHighlighting(highlighting);
+        log.info("Setting syntax highlighting: " + JSON.stringify(highlighting));
     }, (err) => {
         log.error(err);
     });
-}
-
-function createSyntaxHighlighting(rootNavBarItem, highlightDictionary) {
-    if (!rootNavBarItem.childItems || !rootNavBarItem.childItems.length)
-        return;
-
-    rootNavBarItem.childItems.forEach((child) => {
-        var group = kindToHighlightGroup[child.kind];
-        if (group) {
-            highlightDictionary[group].push(child.text);
-        }
-
-        createSyntaxHighlighting(child.childItems, highlightDictionary);
-    });
-}
-
-var kindToHighlightGroup = {
-    var: "Identifier",
-    alias: "Include",
-    function: "Function",
-    method: "Function",
-    property: "Function",
-    class: "Type"
-};
-
-function getAllGroups() {
-    return Object.keys(kindToHighlightGroup).map((key) => kindToHighlightGroup[key]);
 }
 
 vim.addCommand("TSProcessID", (args) => {

@@ -8,6 +8,9 @@ describe("test", () => {
         // var omniCompleter = new OmniCompleter(null);
         // omniCompleter.getCompletions(null);
         expect(1).to.not.equal(2);
+
+        var omni = new OmniCompleter();
+        omni.
     });
 
 });

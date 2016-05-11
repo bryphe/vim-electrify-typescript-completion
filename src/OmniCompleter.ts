@@ -148,18 +148,19 @@ export class OmniCompleter {
             .filter((c) => c.menu)
             .map((c) => c.word);
 
-        if (entryNames.length > 50) {
-            return Promise.resolve({});
-        }
+        return Promise.resolve({});
 
-        return this._host.getCompletionDetails(currentBuffer, line, col, entryNames)
-                .then((info) => {
-                    var ret = {};
-                    info.forEach((i) => {
-                        ret[i.name] = i.displayParts || [];
-                    });
-                    return ret;
-                });
+        // return this._host.getCompletionDetails(currentBuffer, line, col, entryNames)
+        //         .then((info) => {
+        //             var ret = {};
+        //             info.forEach((i) => {
+        //                 ret[i.name] = i.displayParts || [];
+        //             });
+        //             return ret;
+        //         }, (err) => {
+        //             log.info("No completion details");
+        //             return {};
+        //         });
     }
 
     private _mapCompletionValues(completionInfo): any {

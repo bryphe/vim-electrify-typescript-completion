@@ -152,7 +152,7 @@ export class TypeScriptServerHost {
         });
     }
 
-    public _makeTssRequest<T>(commandName: string, args: any): Promise<T> {
+   public _makeTssRequest<T>(commandName: string, args: any): Promise<T> {
         var seqNumber = this._seqNumber++;
         var payload = {
             seq: seqNumber,

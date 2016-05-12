@@ -117,10 +117,12 @@ export class OmniCompleter {
         var entryDetails: CompletionEntryDetails = {};
         return this._host.getCompletions(currentBuffer, line, col)
             .then((completionInfo) => this._mapCompletionValues(completionInfo))
-            .then((completionInfo) => fullCompletionInfo = completionInfo)
-            .then(() => this._getCompletionEntryDetails(currentBuffer, line, col, fullCompletionInfo))
-            .then((details) => entryDetails = details)
-            .then(() => this._augmentCompletions(fullCompletionInfo, entryDetails));
+
+            // Adding the entry details for all entries is too slow to be realistic right now
+            // .then((completionInfo) => fullCompletionInfo = completionInfo)
+            // .then(() => this._getCompletionEntryDetails(currentBuffer, line, col, fullCompletionInfo))
+            // .then((details) => entryDetails = details)
+            // .then(() => this._augmentCompletions(fullCompletionInfo, entryDetails));
     }
 
     private _augmentCompletions(completionInfo: any, completionEntryDetails: CompletionEntryDetails): Promise<any> {

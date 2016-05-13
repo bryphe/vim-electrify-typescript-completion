@@ -6,6 +6,13 @@ import * as tshost from "./TypeScriptServerHost"
 
 var DisplayPartsParser = require("./DisplayPartsParser");
 
+export interface EventContext {
+    col: string;
+    line: string;
+    lineContents: string;
+    currentBuffer: string;
+}
+
 interface CompletionContext {
     col: number;
     line: number;
@@ -25,15 +32,18 @@ export class OmniCompleter {
         this._host = host;
     }
 
-    public getCompletions(eventContext): Promise<any> {
+    public getCompletions(eventContext: EventContext): Promise<any> {
         var col = parseInt(eventContext.col);
         var line = parseInt(eventContext.line);
 
-        if (col <= 2)
+        if (col <= 1)
             return Promise.resolve(null);
 
         var currentCharacter = eventContext.lineContents[col - 2];
-        var previousCharacter = eventContext.lineContents[col - 3];
+
+        var previousCharacter: any = " ";
+        if(col > 2)
+            previousCharacter = eventContext.lineContents[col - 3];
 
         if (currentCharacter == ".") {
             return this._getCompletions(eventContext.currentBuffer, line, col)

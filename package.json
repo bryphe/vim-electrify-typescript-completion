@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "scripts": {
     "test": "mocha",
-    "postinstall": "gulp typings"
+    "postinstall": "typings install"
   },
   "author": "",
   "license": "MIT",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "bluebird": "^3.3.4",
+    "sinon": "^1.17.4",
     "typescript": "^1.8.7"
   }
 }

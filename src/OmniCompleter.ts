@@ -36,6 +36,8 @@ export class OmniCompleter {
         var col = parseInt(eventContext.col);
         var line = parseInt(eventContext.line);
 
+        // In vim, columns are '1' based, so if we're at position 1,
+        // there is nothing left to complete
         if (col <= 1)
             return Promise.resolve(null);
 
@@ -70,12 +72,13 @@ export class OmniCompleter {
                     log.error("Error during completion: " + err);
                     return null;
                 });
-        } else if (currentCharacter == "(") {
+        } else if (currentCharacter === "(" 
+                    || currentCharacter === ","
+                    || (currentCharacter === " " && previousCharacter === ",")) {
             return this._getSignatureHelp(eventContext.currentBuffer, line, col);
         } else {
             return Promise.resolve(null);
         }
-
     }
 
 
@@ -161,18 +164,6 @@ export class OmniCompleter {
             .map((c) => c.word);
 
         return Promise.resolve({});
-
-        // return this._host.getCompletionDetails(currentBuffer, line, col, entryNames)
-        //         .then((info) => {
-        //             var ret = {};
-        //             info.forEach((i) => {
-        //                 ret[i.name] = i.displayParts || [];
-        //             });
-        //             return ret;
-        //         }, (err) => {
-        //             log.info("No completion details");
-        //             return {};
-        //         });
     }
 
     private _mapCompletionValues(completionInfo): any {

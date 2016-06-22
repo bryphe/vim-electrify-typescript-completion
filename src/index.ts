@@ -69,7 +69,12 @@ vim.addCommand("TSSuperUpdate", (args) => {
 vim.addCommand("TSDefinition", (args) => {
     host.getTypeDefinition(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
         val = val[0];
-        vim.exec(":e! " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
+
+        // TODO: Consider porting back to vim API
+        vim.exec(":e! " + val.file);
+        vim.exec(":keepjumps norm " + val.start.line + "G" + val.start.offset);
+        vim.exec(":norm zz");
+        vim.exec(":redraw");
     }, (err) => {
         vim.echo("Error: " + err);
     });

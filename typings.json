@@ -5,5 +5,16 @@
     "mocha": "registry:dt/mocha#2.2.5+20160317120654",
     "node": "registry:dt/node#4.0.0+20160509154515",
     "sinon": "registry:dt/sinon#1.16.0+20160317120654"
+  },
+  "dependencies": {
+    "bluebird": "registry:npm/bluebird#3.3.4+20160622205516",
+    "chai": "registry:npm/chai#3.5.0+20160415060238"
+  },
+  "globalDependencies": {
+    "bluebird": "registry:dt/bluebird#2.0.0+20160701023356",
+    "chai": "registry:dt/chai#3.4.0+20160601211834",
+    "mocha": "registry:dt/mocha#2.2.5+20160619032855",
+    "node": "registry:dt/node#6.0.0+20160621231320",
+    "sinon": "registry:dt/sinon#1.16.0+20160517064723"
   }
 }

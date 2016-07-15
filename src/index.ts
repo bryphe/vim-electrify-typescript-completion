@@ -4,7 +4,6 @@ import fs = require("fs");
 import Promise = require("bluebird");
 
 declare var vim;
-declare var log;
 
 import * as ts from "typescript";
 
@@ -17,7 +16,7 @@ var host = new tshost.TypeScriptServerHost();
 var cachedContents = "";
 
 vim.on("BufferChanged", (args) => {
-    log.info("BufferChanged: " + JSON.stringify(args));
+    console.log("BufferChanged: " + JSON.stringify(args));
     var fileName = args.fileName;
     var newContents = args.newContents;
     cachedContents = newContents;
@@ -45,7 +44,7 @@ vim.on("CursorMovedI", (args) => {
 function showQuickInfo(args) {
 
     host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        log.verbose("Quick info: " + JSON.stringify(val));
+        console.log("Quick info: " + JSON.stringify(val));
         var outputString = val.displayString;
         outputString = outputString.split("\n").join(" ");
         vim.echo(outputString);
@@ -82,7 +81,7 @@ vim.addCommand("TSDefinition", (args) => {
 
 vim.addCommand("TSCompletions", (args) => {
     host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        log.info("Completions: " + JSON.stringify(val));
+        console.log("Completions: " + JSON.stringify(val));
         // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);
@@ -93,18 +92,18 @@ vim.addCommand("TSCompletionDetails", (args) => {
     host.getCompletions(args.currentBuffer, parseInt(args.line), parseInt(args.col))
         .then((val: any) => {
             var names = val.map((v) => v.name);
-            log.info("Names: " + JSON.stringify(names));
+            console.log("Names: " + JSON.stringify(names));
 
             host.getCompletionDetails(args.currentBuffer, parseInt(args.line), parseInt(args.col), names)
             .then((result => {
-                log.info("Completoins with details: " + JSON.stringify(result));
+                console.log("Completoins with details: " + JSON.stringify(result));
             }))
         });
 })
 
 vim.addCommand("TSQuickInfo", (args) => {
     host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        log.verbose("Quick info: " + JSON.stringify(val));
+        console.log("Quick info: " + JSON.stringify(val));
         vim.echo(val.displayString);
         // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
@@ -114,7 +113,7 @@ vim.addCommand("TSQuickInfo", (args) => {
 
 vim.addCommand("TSSignatureHelp", (args) => {
     host.getSignatureHelp(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        log.info("Signature help" + JSON.stringify(val));
+        console.log("Signature help" + JSON.stringify(val));
         // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);
@@ -141,7 +140,7 @@ vim.addCommand("TSNavigationBarItems", (args) => {
     host._makeTssRequest<void>("navbar", {
         file: args.currentBuffer
     }).then((val: any) => {
-        log.info(JSON.stringify(val));
+        console.log(JSON.stringify(val));
         console.log(JSON.stringify(val));
     }, (err) => {
         console.log("Error:" + err);
@@ -149,7 +148,7 @@ vim.addCommand("TSNavigationBarItems", (args) => {
 });
 
 vim.addCommand("TSSyntaxHighlight", (args) => {
-    log.info("Syntax highlight");
+    console.log("Syntax highlight");
 
     updateSyntaxHighlighting(args.currentBuffer);
 });
@@ -160,15 +159,15 @@ function updateSyntaxHighlighting(file) {
         file: file
     }).then((val: any) => {
 
-        log.info("Got highlighting result: " + JSON.stringify(val));
+        console.log("Got highlighting result: " + JSON.stringify(val));
 
         var syntaxHighlighter = new SyntaxHighlighter();
         var highlighting = syntaxHighlighter.getSyntaxHighlighting(val);
 
         vim.setSyntaxHighlighting(highlighting);
-        log.info("Setting syntax highlighting: " + JSON.stringify(highlighting));
+        console.log("Setting syntax highlighting: " + JSON.stringify(highlighting));
     }, (err) => {
-        log.error(err);
+        console.error(err);
     });
 }
 

@@ -5,8 +5,6 @@ import readline = require("readline");
 import os = require("os");
 import Promise = require("bluebird");
 
-declare var log;
-
 var tssPath = path.join(__dirname, "..", "node_modules", "typescript", "lib", "tsserver.js");
 
 export class TypeScriptServerHost {
@@ -31,13 +29,10 @@ export class TypeScriptServerHost {
         });
 
         this._tssProcess.stderr.on("data", (data, err) => {
-            log.error("Error from tss: " + data);
+            console.error("Error from tss: " + data);
         });
 
         this._rl.on("line", (msg) => {
-            // log.verbose("TSS - got line: " + msg);
-            // log.verbose("msg.indexOf('{')" + msg.indexOf("{"))
-
             if (msg.indexOf("{") === 0) {
                 this._parseResponse(msg);
             }
@@ -45,7 +40,6 @@ export class TypeScriptServerHost {
     }
 
     public openFile(fullFilePath: string): void {
-        log.verbose("OPEN FILE");
         this._makeTssRequest("open", {
             file: fullFilePath
         });
@@ -164,7 +158,7 @@ export class TypeScriptServerHost {
         var ret = this._createDeferredPromise<T>();
         this._seqToPromises[seqNumber] = ret;
 
-        log.verbose("Sending request: " + JSON.stringify(payload));
+        console.log("Sending request: " + JSON.stringify(payload));
         // this._rl.write(JSON.stringify(payload) + os.EOL);
         this._tssProcess.stdin.write(JSON.stringify(payload) + os.EOL);
 

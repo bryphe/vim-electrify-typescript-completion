@@ -1,7 +1,5 @@
 import Promise = require("bluebird");
 
-declare var log;
-
 import * as tshost from "./TypeScriptServerHost"
 
 var DisplayPartsParser = require("./DisplayPartsParser");
@@ -56,7 +54,7 @@ export class OmniCompleter {
                         items: items
                     };
                 }, (err) => {
-                    log.error("Error during completion: " + err);
+                    console.error("Error during completion: " + err);
                     return null;
                 });
         } else if (currentCharacter.match(/[a-z]/i) && !previousCharacter.match(/[a-z]/i)) {
@@ -69,7 +67,7 @@ export class OmniCompleter {
                         items: items
                     };
                 }, (err) => {
-                    log.error("Error during completion: " + err);
+                    console.error("Error during completion: " + err);
                     return null;
                 });
         } else if (currentCharacter === "(" 

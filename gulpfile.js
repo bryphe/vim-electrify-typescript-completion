@@ -24,8 +24,10 @@ gulp.task("typings:src", function() {
             .pipe(gulpTypings());
 });
 
-gulp.watch("src\\**\\*.ts", gulp.parallel("build:src"));
-gulp.watch("test\\**\\*.ts", gulp.parallel("build:test"));
+gulp.task("watch", function() {
+    gulp.watch("src\\**\\*.ts", gulp.parallel("build:src"));
+    gulp.watch("test\\**\\*.ts", gulp.parallel("build:test"));
+});
 
 gulp.task("build", gulp.series("build:src", "build:test"));
 gulp.task("default", gulp.series("build"));

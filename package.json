@@ -4,6 +4,7 @@
   "description": "A js plugin implementation of JS omnicompletion, using the typescript language services",
   "main": "./lib/index.js",
   "scripts": {
+    "build": "gulp build",
     "test": "mocha",
     "postinstall": "typings install"
   },

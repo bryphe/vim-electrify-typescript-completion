@@ -52,7 +52,6 @@ export class TypeScriptServerHost {
         });
     }
 
-
     public getTypeDefinition(fullFilePath: string, line: number, col: number): Promise<void> {
         return this._makeTssRequest<void>("typeDefinition", {
             file: fullFilePath,
@@ -134,7 +133,7 @@ export class TypeScriptServerHost {
 
     public getErrors(fullFilePath: string): Promise<void> {
         return this._makeTssRequest<void>("geterr", {
-            file: fullFilePath,
+            files: [fullFilePath],
         });
     }
 

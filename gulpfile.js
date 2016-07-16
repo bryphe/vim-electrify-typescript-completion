@@ -3,7 +3,6 @@ var merge = require("merge2");
 var ts = require("gulp-typescript");
 var gulpTypings = require("gulp-typings");
 
-
 gulp.task("build:src", function() {
     var srcProject = ts.createProject("tsconfig.json");
     var tsResult = gulp.src(["typings/**/*.d.ts", "src/**/*.ts"])
@@ -17,7 +16,7 @@ gulp.task("build:test", function() {
     var tsResult = gulp.src(["typings/**/*.d.ts", "test/**/*.ts"]) 
         .pipe(ts(testProject));
 
-    return tsResult.js.pipe(gulp.dest("test"));
+    return tsResult.js.pipe(gulp.dest("lib_test"));
 });
 
 gulp.task("typings:src", function() {
@@ -25,8 +24,10 @@ gulp.task("typings:src", function() {
             .pipe(gulpTypings());
 });
 
-gulp.watch("src\\**\\*.ts", gulp.parallel("build:src"));
-gulp.watch("test\\**\\*.ts", gulp.parallel("build:test"));
+gulp.task("watch", function() {
+    gulp.watch("src\\**\\*.ts", gulp.parallel("build:src"));
+    gulp.watch("test\\**\\*.ts", gulp.parallel("build:test"));
+});
 
 gulp.task("build", gulp.series("build:src", "build:test"));
 gulp.task("default", gulp.series("build"));

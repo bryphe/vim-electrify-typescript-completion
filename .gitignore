@@ -18,9 +18,6 @@ coverage
 typings/
 lib/
 lib_test/
-test/**/*.js
-test/**/*.js.map
-test/**/*.d.ts
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt

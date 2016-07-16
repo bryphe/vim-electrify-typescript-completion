@@ -3,13 +3,13 @@ import fs = require("fs");
 
 import Promise = require("bluebird");
 
-declare var vim;
 
 import * as ts from "typescript";
-
 import * as tshost from "./TypeScriptServerHost"
 import * as omni from "./OmniCompleter"
 import {SyntaxHighlighter} from "./SyntaxHighlighter"
+
+declare var vim;
 
 var host = new tshost.TypeScriptServerHost();
 

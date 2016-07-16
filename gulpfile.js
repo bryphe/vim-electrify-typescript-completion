@@ -3,7 +3,6 @@ var merge = require("merge2");
 var ts = require("gulp-typescript");
 var gulpTypings = require("gulp-typings");
 
-
 gulp.task("build:src", function() {
     var srcProject = ts.createProject("tsconfig.json");
     var tsResult = gulp.src(["typings/**/*.d.ts", "src/**/*.ts"])

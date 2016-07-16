@@ -16,7 +16,7 @@ gulp.task("build:test", function() {
     var tsResult = gulp.src(["typings/**/*.d.ts", "test/**/*.ts"]) 
         .pipe(ts(testProject));
 
-    return tsResult.js.pipe(gulp.dest("test"));
+    return tsResult.js.pipe(gulp.dest("lib_test"));
 });
 
 gulp.task("typings:src", function() {

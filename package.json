@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "scripts": {
     "build": "gulp build",
-    "test": "mocha",
+    "test": "mocha --recursive lib_test",
     "postinstall": "typings install"
   },
   "author": "",

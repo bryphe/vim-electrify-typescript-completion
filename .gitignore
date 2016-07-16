@@ -17,9 +17,7 @@ coverage
 # TSD typings directory
 typings/
 lib/
-test/**/*.js
-test/**/*.js.map
-test/**/*.d.ts
+lib_test/
 
 # Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
 .grunt

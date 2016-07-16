@@ -17,6 +17,7 @@ coverage
 # TSD typings directory
 typings/
 lib/
+lib_test/
 test/**/*.js
 test/**/*.js.map
 test/**/*.d.ts

@@ -3,11 +3,14 @@ import fs = require("fs");
 import path = require("path");
 import readline = require("readline");
 import os = require("os");
+
+import * as events from "events";
+
 import Promise = require("bluebird");
 
 var tssPath = path.join(__dirname, "..", "node_modules", "typescript", "lib", "tsserver.js");
 
-export class TypeScriptServerHost {
+export class TypeScriptServerHost extends events.EventEmitter {
 
     private _tssProcess = null;
     private _seqNumber = 0;
@@ -19,6 +22,8 @@ export class TypeScriptServerHost {
     }
 
     constructor() {
+        super();
+
         this._tssProcess = childProcess.spawn("node", [tssPath], { detached: true });
         console.log("Process ID: " + this._tssProcess.pid);
 
@@ -175,6 +180,16 @@ export class TypeScriptServerHost {
                 this._seqToPromises[seq].resolve(response.body);
             } else {
                 this._seqToPromises[seq].reject(response.message);
+            }
+        } else {
+            // If a sequence wasn't specified, it might be a call that returns multiple results
+            // Like 'geterr' - returns both semanticDiag and syntaxDiag
+            console.log("No sequence number returned.")
+
+            if(response.type && response.type === "event") {
+                if(response.event && response.event === "semanticDiag") {
+                    this.emit("semanticDiag", response.body);
+                }
             }
         }
     }

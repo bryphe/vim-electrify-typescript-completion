@@ -15,29 +15,64 @@ var host = new tshost.TypeScriptServerHost();
 
 var cachedContents = "";
 
+host.on("semanticDiag", (diagnostics) => {
+    var file = diagnostics.file;
+
+    var errors = diagnostics.diagnostics.map(d => {
+
+        var text = d.text.split("'").join("`");
+
+        return {
+            fileName: file,
+            lineNumber: d.start.line,
+            startColumn: d.start.offset,
+            endColumn: d.end.offset,
+            text: text
+        }
+    });
+
+    vim.setErrors("vim-electrify-typescript", errors);
+});
+
 vim.on("BufferChanged", (args) => {
+    if (args.filetype !== "javascript" && args.filetype !== "typescript")
+        return;
+
     console.log("BufferChanged: " + JSON.stringify(args));
     var fileName = args.fileName;
     var newContents = args.newContents;
     cachedContents = newContents;
 
-    host.updateFile(fileName, newContents);
-    updateSyntaxHighlighting(fileName);
+    host.updateFile(args.currentBuffer, newContents);
+    updateSyntaxHighlighting(args.currentBuffer);
+
+    host.getErrors(args.currentBuffer);
 });
 
 vim.omniCompleters.register("typescript", new omni.OmniCompleter(host));
 vim.omniCompleters.register("javascript", new omni.OmniCompleter(host));
 
 vim.on("BufEnter", (args) => {
+    if (args.filetype !== "javascript" && args.filetype !== "typescript")
+        return;
+
     host.openFile(args.currentBuffer);
     updateSyntaxHighlighting(args.currentBuffer);
+    host.getErrors(args.currentBuffer);
+
 });
 
 vim.on("CursorMoved", (args) => {
+    if (args.filetype !== "javascript" && args.filetype !== "typescript")
+        return;
+
     showQuickInfo(args);
 });
 
 vim.on("CursorMovedI", (args) => {
+    if (args.filetype !== "javascript" && args.filetype !== "typescript")
+        return;
+
     showQuickInfo(args);
 });
 
@@ -66,6 +101,7 @@ vim.addCommand("TSDefinition", (args) => {
 
 vim.addCommand("TSErrors", (args) => {
     host.getErrors(args.currentBuffer).then((val: any) => {
+        console.log("Return")
         // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
     }, (err) => {
         vim.echo("Error: " + err);

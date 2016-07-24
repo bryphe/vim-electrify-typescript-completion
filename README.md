@@ -6,6 +6,7 @@
 - [Intro](#intro)
 - [Installation](#installation)
     - [Windows](#windows)
+- [Usage](#usage)
 - [Commands](#commands)
 - [Notes](#notes)
 - [License](#license)
@@ -46,7 +47,12 @@ Recommended:
 
 - Install dependencies
 
-    `npm run install`
+    `npm install`
+
+Usage
+-----
+
+Once the plugin is installed, it will automatically be activated for JavaScript and TypeScript files.
 
 Commands
 --------

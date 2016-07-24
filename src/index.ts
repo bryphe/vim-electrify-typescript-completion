@@ -4,23 +4,21 @@ import * as Promise from "bluebird";
 import {TypeScriptServerHost} from "./TypeScriptServerHost"
 import {OmniCompleter} from "./OmniCompleter"
 
-import {SyntaxHighlighter} from "./SyntaxHighlighter"
+import {SyntaxHighlightManager} from "./SyntaxHighlightManager"
 import {ErrorManager} from "./ErrorManager"
-import * as _ from "lodash";
 
 declare var vim;
 
 var host = new TypeScriptServerHost();
 var errorManager = new ErrorManager(vim, host);
+var syntaxHighlightManager = new SyntaxHighlightManager(vim, host);
 
 vim.omniCompleters.register("typescript", new OmniCompleter(host));
 vim.omniCompleters.register("javascript", new OmniCompleter(host));
 
 vim.on("BufferChanged", (args) => {
     host.updateFile(args.currentBuffer, args.newContents);
-    _.debounce(() => {
-        updateSyntaxHighlighting(args.currentBuffer);
-    }, 100);
+    syntaxHighlightManager.updateSyntaxHighlighting(args.currentBuffer);
 });
 
 vim.on("BufSavePre", (args) => {
@@ -29,7 +27,7 @@ vim.on("BufSavePre", (args) => {
 
 vim.on("BufEnter", (args) => {
     host.openFile(args.currentBuffer);
-    updateSyntaxHighlighting(args.currentBuffer);
+    syntaxHighlightManager.updateSyntaxHighlighting(args.currentBuffer);
     errorManager.checkForErrorsAcrossProject(args.currentBuffer);
 });
 
@@ -59,20 +57,3 @@ vim.addCommand("TSDefinition", (args) => {
         vim.echo("Error: " + err);
     });
 });
-
-function updateSyntaxHighlighting(file) {
-    host._makeTssRequest<void>("navbar", {
-        file: file
-    }).then((val: any) => {
-
-        console.log("Got highlighting result: " + JSON.stringify(val));
-
-        var syntaxHighlighter = new SyntaxHighlighter();
-        var highlighting = syntaxHighlighter.getSyntaxHighlighting(val);
-
-        vim.setSyntaxHighlighting(highlighting);
-        console.log("Setting syntax highlighting: " + JSON.stringify(highlighting));
-    }, (err) => {
-        console.error(err);
-    });
-}

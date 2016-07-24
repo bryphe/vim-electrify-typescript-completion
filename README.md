@@ -5,7 +5,7 @@
 
 - [Intro](#intro)
 - [Installation](#installation)
-    -[Windows](#windows)
+    - [Windows](#windows)
 - [Commands](#commands)
 - [Notes](#notes)
 - [License](#license)
@@ -39,11 +39,11 @@ Installation
 #### Installation:
 - Clone into your plugins folder:
 
-    git clone https://github.com/extr0py/vim-electrify-typescript-completion.git
+    `git clone https://github.com/extr0py/vim-electrify-typescript-completion.git
 
 - Install dependencies
 
-    npm run install
+    `npm run install
 
 Commands
 --------

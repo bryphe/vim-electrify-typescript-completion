@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/extr0py/vim-electrify-typescript-completion.svg?branch=enable-travis-ci)](https://travis-ci.org/extr0py/vim-electrify-typescript-completion)
 [![Stories in Ready](https://badge.waffle.io/extr0py/vim-electrify-typescript-completion.png?label=ready&title=Ready)](https://waffle.io/extr0py/vim-electrify-typescript-completion)
 # vim-electrify-typescript-completion
-##### Supercharge VIM into a TypeScript IDE
+##### Supercharge VIM into a TypeScript powerhouse
 
 - [Intro](#intro)
 - [Installation](#installation)
@@ -36,14 +36,17 @@ Installation
 - Node / npm (recommended version 6+ and 3+)
 - [vim-electrify](https://github.com/extr0py/vim-electrify)
 
+Recommended:
+- [typescript-vim](https://github.com/leafgarland/typescript-vim)
+
 #### Installation:
 - Clone into your plugins folder:
 
-    `git clone https://github.com/extr0py/vim-electrify-typescript-completion.git
+    `git clone https://github.com/extr0py/vim-electrify-typescript-completion.git`
 
 - Install dependencies
 
-    `npm run install
+    `npm run install`
 
 Commands
 --------
@@ -51,6 +54,8 @@ Commands
 #### Goto definition
 
     :TSDefinition
+
+Navigates to the definition of an object, if possible.
 
 Notes
 -----

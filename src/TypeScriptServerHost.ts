@@ -83,35 +83,11 @@ export class TypeScriptServerHost extends events.EventEmitter {
     }
 
     public updateFile(fullFilePath: string, updatedContents: string): Promise<void> {
-
-        // this._makeTssRequest<void>("close", 
-        //     file: fullFilePath,
-        // });
-        // console.log("calling open");
-
-        // updatedContents = updatedContents.split(os.EOL).join("");
-        var promise = this._makeTssRequest<void>("open", {
+        return this._makeTssRequest<void>("open", {
             file: fullFilePath,
             fileContent: updatedContents
         });
-
-        // var tmpFile = "C:/tempfile.txt";
-
-        //  this._makeTssRequest<void>("saveto", {
-        //     file: fullFilePath,
-        //     tmpfile: tmpFile
-        // });
-
-        return promise;
     }
-
-    // public getCompletionEntryDetails(fullFilePath: string, line: number, col: number): Promise<void> {
-    //     return this._makeTssRequest<void>("completionEntryDetails", {
-    //         file: fullFilePath,
-    //         line: line,
-    //         offset: col
-    //     });
-    // }
 
     public getQuickInfo(fullFilePath: string, line: number, col: number): Promise<void> {
         return this._makeTssRequest<void>("quickinfo", {
@@ -142,6 +118,12 @@ export class TypeScriptServerHost extends events.EventEmitter {
         });
     }
 
+    public getErrorsAcrossProject(fullFilePath: string): Promise<void> {
+        return this._makeTssRequest<void>("geterrForProject", {
+            file: fullFilePath
+        });
+    }
+
     public getDocumentHighlights(fullFilePath: string, lineNumber: number, offset: number): Promise<void> {
         return this._makeTssRequest<void>("documentHighlights", {
             file: fullFilePath,
@@ -162,8 +144,6 @@ export class TypeScriptServerHost extends events.EventEmitter {
         var ret = this._createDeferredPromise<T>();
         this._seqToPromises[seqNumber] = ret;
 
-        console.log("Sending request: " + JSON.stringify(payload));
-        // this._rl.write(JSON.stringify(payload) + os.EOL);
         this._tssProcess.stdin.write(JSON.stringify(payload) + os.EOL);
 
         return ret.promise;

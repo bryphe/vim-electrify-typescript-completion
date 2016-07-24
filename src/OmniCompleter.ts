@@ -1,5 +1,4 @@
 import Promise = require("bluebird");
-
 import * as tshost from "./TypeScriptServerHost"
 
 var DisplayPartsParser = require("./DisplayPartsParser");

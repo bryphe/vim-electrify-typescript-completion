@@ -24,10 +24,14 @@
   },
   "dependencies": {
     "bluebird": "^3.3.4",
+    "lodash": "^4.13.1",
     "sinon": "^1.17.4",
     "typescript": "^1.8.7"
   },
   "electrify": {
-      "supportedFileTypes": ["javascript", "typescript"]
+    "supportedFileTypes": [
+      "javascript",
+      "typescript"
+    ]
   }
 }

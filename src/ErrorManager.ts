@@ -28,6 +28,8 @@ export class ErrorManager {
         this._vim = vim;
         this._host = host;
 
+        var updateErrorFn = _.throttle(() => this._updateErrors(), 250, { leading: true, trailing: true });
+
         this._host.on("semanticDiag", (diagnostics) => {
             var file = diagnostics.file;
 
@@ -46,9 +48,7 @@ export class ErrorManager {
 
             this._fileToErrors[file] = errors;
 
-            _.debounce(() => {
-                this._updateErrors()
-            }, 500);
+            updateErrorFn();
         });
     }
 

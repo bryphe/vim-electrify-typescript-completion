@@ -1,3 +1,9 @@
+/**
+ * OmniCompleter.ts
+ *
+ * Implementation of JavaScript/TypeScript omnicompleter
+ */
+
 import Promise = require("bluebird");
 import * as tshost from "./TypeScriptServerHost"
 

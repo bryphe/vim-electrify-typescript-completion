@@ -6,6 +6,10 @@
 - [Intro](#intro)
 - [Installation](#installation)
     -[Windows](#windows)
+- [Commands](#commands)
+- [Notes](#notes)
+- [License](#license)
+- [Contact](#contact)
 
 Intro
 ------
@@ -22,18 +26,44 @@ The demo shows the following aspects:
 - Error flagging and highlighting
 - Goto definition
 
-
 Installation
-------
+------------
 
 ### Windows
 
-Prerequisites:
-    - Vim 7.4
-    - Node / npm (recommended version 6+ and 3+)
-    - [vim-electrify](https://github.com/extr0py/vim-electrify)
+#### Prerequisites:
+- Vim 7.4
+- Node / npm (recommended version 6+ and 3+)
+- [vim-electrify](https://github.com/extr0py/vim-electrify)
 
-Installation:
-    - Clone into your plugins folder:
+#### Installation:
+- Clone into your plugins folder:
 
-    `git clone https://github.com/extr0py/vim-electrify-typescript-completion.git
+    git clone https://github.com/extr0py/vim-electrify-typescript-completion.git
+
+- Install dependencies
+
+    npm run install
+
+Commands
+--------
+
+#### Goto definition
+
+    :TSDefinition
+
+Notes
+-----
+- Make sure to have a valid tsconfig.json or jsconfig.json for best results
+- Not yet tested for compatibility with AutoComplPop, YouCompleteMe, or Syntastic.
+    - Recommend disabling these plugins for typescript files.
+
+License
+-------
+
+MIT License
+
+Contact
+-------
+
+extropy@extropygames.com

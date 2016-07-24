@@ -21,6 +21,9 @@ export class ErrorManager {
     private _host: TypeScriptServerHost;
     private _vim: any;
     private _lastErrors: IErrorInfo[] = [];
+    private _fileToErrors: { [key: string]: IErrorInfo } = {};
+
+    private _currentTimeout;
 
     constructor(vim: any, host: TypeScriptServerHost) {
         this._vim = vim;
@@ -42,11 +45,32 @@ export class ErrorManager {
                 }
             });
 
-            if(!this._areErrorArraysEqual(errors, this._lastErrors)) {
-                this._lastErrors = errors;
-                this._vim.setErrors("vim-electrify-typescript", this._lastErrors);
+            this._fileToErrors[file] = errors;
+
+            if (!this._currentTimeout) {
+                this._currentTimeout = setTimeout(() => this._updateErrors(), 500);
             }
+
         });
+    }
+
+    private _updateErrors(): void {
+        var errors = this._combineErrors();
+
+        if (!this._areErrorArraysEqual(errors, this._lastErrors)) {
+            this._lastErrors = errors;
+            this._vim.setErrors("vim-electrify-typescript", this._lastErrors);
+        }
+
+        this._currentTimeout = null;
+    }
+
+    private _combineErrors(): IErrorInfo[] {
+        var ret = [];
+        Object.keys(this._fileToErrors).forEach((k) => {
+            ret = ret.concat(this._fileToErrors[k]);
+        });
+        return ret;
     }
 
     public getErrorOnLine(bufferName: string, line: number): string {
@@ -54,7 +78,7 @@ export class ErrorManager {
             return e.fileName === bufferName && e.lineNumber === line;
         });
 
-        if(errorOnLine.length >= 1) {
+        if (errorOnLine.length >= 1) {
             return errorOnLine[0].text;
         } else {
             return null;
@@ -69,21 +93,20 @@ export class ErrorManager {
         this._host.getErrorsAcrossProject(bufferName);
     }
 
-
     private _areErrorArraysEqual(err1: IErrorInfo[], err2: IErrorInfo[]): boolean {
-        if(err1.length !== err2.length)
+        if (err1.length !== err2.length)
             return false;
 
-        for(var i = 0; i < err1.length; i++) {
+        for (var i = 0; i < err1.length; i++) {
             var e1 = err1[i];
             var e2 = err2[i];
 
-            if(!(
+            if (!(
                 e1.fileName === e2.fileName
-            &&  e1.lineNumber === e2.lineNumber
-            && e1.startColumn === e2.startColumn
-            && e1.endColumn === e2.endColumn
-            && e1.text === e2.text
+                && e1.lineNumber === e2.lineNumber
+                && e1.startColumn === e2.startColumn
+                && e1.endColumn === e2.endColumn
+                && e1.text === e2.text
             ))
                 return false;
         }

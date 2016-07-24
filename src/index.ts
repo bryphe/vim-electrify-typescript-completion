@@ -1,17 +1,15 @@
 import * as path from "path";
 import * as fs from "fs";
+import * as Promise from "bluebird";
+import {TypeScriptServerHost} from "./TypeScriptServerHost"
+import {OmniCompleter} from "./OmniCompleter"
 
-import Promise = require("bluebird");
-
-import * as ts from "typescript";
-import * as tshost from "./TypeScriptServerHost"
-import * as omni from "./OmniCompleter"
 import {SyntaxHighlighter} from "./SyntaxHighlighter"
 import {ErrorManager} from "./ErrorManager"
 
 declare var vim;
 
-var host = new tshost.TypeScriptServerHost();
+var host = new TypeScriptServerHost();
 var errorManager = new ErrorManager(vim, host);
 
 var cachedContents = "";
@@ -28,8 +26,8 @@ vim.on("BufferChanged", (args) => {
     errorManager.checkForErrorsInCurrentBuffer(args.currentBuffer);
 });
 
-vim.omniCompleters.register("typescript", new omni.OmniCompleter(host));
-vim.omniCompleters.register("javascript", new omni.OmniCompleter(host));
+vim.omniCompleters.register("typescript", new OmniCompleter(host));
+vim.omniCompleters.register("javascript", new OmniCompleter(host));
 
 vim.on("BufSavePre", (args) => {
     errorManager.checkForErrorsAcrossProject(args.currentBuffer);
@@ -38,13 +36,13 @@ vim.on("BufSavePre", (args) => {
 vim.on("BufEnter", (args) => {
     host.openFile(args.currentBuffer);
     updateSyntaxHighlighting(args.currentBuffer);
-    errorManager.checkForErrorsInCurrentBuffer(args.currentBuffer);
+    errorManager.checkForErrorsAcrossProject(args.currentBuffer);
 });
 
 vim.on("CursorMoved", (args) => {
     var error = errorManager.getErrorOnLine(args.currentBuffer, parseInt(args.line));
     if(error) {
-        vim.echohl("Error", "ERROR: " + error);
+        vim.echohl("ERROR: " + error, "Error");
     } else {
         showQuickInfo(args);
     }

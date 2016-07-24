@@ -1,5 +1,10 @@
-import Promise = require("bluebird");
+/**
+ * OmniCompleter.ts
+ *
+ * Implementation of JavaScript/TypeScript omnicompleter
+ */
 
+import Promise = require("bluebird");
 import * as tshost from "./TypeScriptServerHost"
 
 var DisplayPartsParser = require("./DisplayPartsParser");
@@ -78,7 +83,6 @@ export class OmniCompleter {
             return Promise.resolve(null);
         }
     }
-
 
     private _getSignatureHelp(currentBuffer: string, line: number, col: number): Promise<any> {
         var displayPartsParser = new DisplayPartsParser.DisplayPartsParser();

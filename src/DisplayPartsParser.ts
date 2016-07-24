@@ -1,3 +1,7 @@
+/**
+ * DisplayPartsParser.ts
+ */
+
 export interface DisplayPart {
     text: string;
     kind: string;

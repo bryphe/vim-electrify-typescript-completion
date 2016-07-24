@@ -1,3 +1,7 @@
+/**
+ * SyntaxHighlighter.ts
+ */
+
 export interface SyntaxHighlightResult {
     [highlightGroup: string]: string[];
 }

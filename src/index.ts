@@ -1,97 +1,64 @@
-import path = require("path");
-import fs = require("fs");
+import * as path from "path";
+import * as fs from "fs";
+import * as Promise from "bluebird";
+import {TypeScriptServerHost} from "./TypeScriptServerHost"
+import {OmniCompleter} from "./OmniCompleter"
 
-import Promise = require("bluebird");
+import {SyntaxHighlightManager} from "./SyntaxHighlightManager"
+import {ErrorManager} from "./ErrorManager"
+import {QuickInfo} from "./QuickInfo";
 
+var host = new TypeScriptServerHost();
+var errorManager = new ErrorManager(vim, host);
+var syntaxHighlightManager = new SyntaxHighlightManager(vim, host);
+var quickInfo = new QuickInfo(vim, host, errorManager);
 
-import * as ts from "typescript";
-import * as tshost from "./TypeScriptServerHost"
-import * as omni from "./OmniCompleter"
-import {SyntaxHighlighter} from "./SyntaxHighlighter"
-
-declare var vim;
-
-var host = new tshost.TypeScriptServerHost();
-
-var cachedContents = "";
+vim.omniCompleters.register("typescript", new OmniCompleter(host));
+vim.omniCompleters.register("javascript", new OmniCompleter(host));
 
 vim.on("BufferChanged", (args) => {
-    console.log("BufferChanged: " + JSON.stringify(args));
-    var fileName = args.fileName;
-    var newContents = args.newContents;
-    cachedContents = newContents;
-
-    host.updateFile(fileName, newContents);
-    updateSyntaxHighlighting(fileName);
+    host.updateFile(args.currentBuffer, args.newContents);
+    syntaxHighlightManager.updateSyntaxHighlighting(args.currentBuffer);
 });
 
-vim.omniCompleters.register("typescript", new omni.OmniCompleter(host));
-vim.omniCompleters.register("javascript", new omni.OmniCompleter(host));
+vim.on("BufWritePre", (args) => {
+    errorManager.checkForErrorsAcrossProject(args.currentBuffer);
+});
 
 vim.on("BufEnter", (args) => {
     host.openFile(args.currentBuffer);
-    updateSyntaxHighlighting(args.currentBuffer);
+    syntaxHighlightManager.updateSyntaxHighlighting(args.currentBuffer);
+    errorManager.checkForErrorsAcrossProject(args.currentBuffer);
 });
 
 vim.on("CursorMoved", (args) => {
-    showQuickInfo(args);
+    quickInfo.showQuickInfo(args);
 });
 
 vim.on("CursorMovedI", (args) => {
-    showQuickInfo(args);
+    errorManager.clearErrorOnLine(args.currentBuffer, parseInt(args.line));
 });
-
-function showQuickInfo(args) {
-    host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
-        console.log("Quick info: " + JSON.stringify(val));
-        var outputString = val.displayString;
-        outputString = outputString.split("\n").join(" ");
-        vim.echo(outputString);
-    });
-}
 
 vim.addCommand("TSDefinition", (args) => {
     host.getTypeDefinition(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
         val = val[0];
-
-        // TODO: Consider porting back to vim API
-        vim.exec(":e! " + val.file);
-        vim.exec(":keepjumps norm " + val.start.line + "G" + val.start.offset);
-        vim.exec(":norm zz");
-        vim.exec(":redraw");
+        vim.openBuffer(val.file, val.start.line, val.start.offset);
     }, (err) => {
         vim.echo("Error: " + err);
     });
 });
 
-vim.addCommand("TSErrors", (args) => {
-    host.getErrors(args.currentBuffer).then((val: any) => {
-        // vim.exec(":e " + val.file + " | :norm " + val.start.line + "G" + val.start.offset + "| | zz");
-    }, (err) => {
-        vim.echo("Error: " + err);
-    });
-});
+import * as events from "events";
 
-vim.addCommand("TSSyntaxHighlight", (args) => {
-    console.log("Syntax highlight");
+declare var vim: Vim;
 
-    updateSyntaxHighlighting(args.currentBuffer);
-});
+export interface OmniCompletionManager {
+    register(fileType: string, omniCompleter: any);
+}
 
-function updateSyntaxHighlighting(file) {
-
-    host._makeTssRequest<void>("navbar", {
-        file: file
-    }).then((val: any) => {
-
-        console.log("Got highlighting result: " + JSON.stringify(val));
-
-        var syntaxHighlighter = new SyntaxHighlighter();
-        var highlighting = syntaxHighlighter.getSyntaxHighlighting(val);
-
-        vim.setSyntaxHighlighting(highlighting);
-        console.log("Setting syntax highlighting: " + JSON.stringify(highlighting));
-    }, (err) => {
-        console.error(err);
-    });
+export interface Vim extends events.EventEmitter {
+    omniCompleters: OmniCompletionManager;
+    addCommand(commandName: string, callbackFunction: Function);
+    openBuffer(bufferPath: string, line?: number, column?: number);
+    echo(message: string);
 }

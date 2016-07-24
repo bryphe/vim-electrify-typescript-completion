@@ -1,13 +1,20 @@
+/**
+ * TypeScriptServerHost.ts
+ */
+
 import childProcess = require("child_process");
 import fs = require("fs");
 import path = require("path");
 import readline = require("readline");
 import os = require("os");
+
+import * as events from "events";
+
 import Promise = require("bluebird");
 
 var tssPath = path.join(__dirname, "..", "node_modules", "typescript", "lib", "tsserver.js");
 
-export class TypeScriptServerHost {
+export class TypeScriptServerHost extends events.EventEmitter {
 
     private _tssProcess = null;
     private _seqNumber = 0;
@@ -19,6 +26,8 @@ export class TypeScriptServerHost {
     }
 
     constructor() {
+        super();
+
         this._tssProcess = childProcess.spawn("node", [tssPath], { detached: true });
         console.log("Process ID: " + this._tssProcess.pid);
 
@@ -78,35 +87,11 @@ export class TypeScriptServerHost {
     }
 
     public updateFile(fullFilePath: string, updatedContents: string): Promise<void> {
-
-        // this._makeTssRequest<void>("close", 
-        //     file: fullFilePath,
-        // });
-        // console.log("calling open");
-
-        // updatedContents = updatedContents.split(os.EOL).join("");
-        var promise = this._makeTssRequest<void>("open", {
+        return this._makeTssRequest<void>("open", {
             file: fullFilePath,
             fileContent: updatedContents
         });
-
-        // var tmpFile = "C:/tempfile.txt";
-
-        //  this._makeTssRequest<void>("saveto", {
-        //     file: fullFilePath,
-        //     tmpfile: tmpFile
-        // });
-
-        return promise;
     }
-
-    // public getCompletionEntryDetails(fullFilePath: string, line: number, col: number): Promise<void> {
-    //     return this._makeTssRequest<void>("completionEntryDetails", {
-    //         file: fullFilePath,
-    //         line: line,
-    //         offset: col
-    //     });
-    // }
 
     public getQuickInfo(fullFilePath: string, line: number, col: number): Promise<void> {
         return this._makeTssRequest<void>("quickinfo", {
@@ -137,6 +122,12 @@ export class TypeScriptServerHost {
         });
     }
 
+    public getErrorsAcrossProject(fullFilePath: string): Promise<void> {
+        return this._makeTssRequest<void>("geterrForProject", {
+            file: fullFilePath
+        });
+    }
+
     public getDocumentHighlights(fullFilePath: string, lineNumber: number, offset: number): Promise<void> {
         return this._makeTssRequest<void>("documentHighlights", {
             file: fullFilePath,
@@ -157,8 +148,6 @@ export class TypeScriptServerHost {
         var ret = this._createDeferredPromise<T>();
         this._seqToPromises[seqNumber] = ret;
 
-        console.log("Sending request: " + JSON.stringify(payload));
-        // this._rl.write(JSON.stringify(payload) + os.EOL);
         this._tssProcess.stdin.write(JSON.stringify(payload) + os.EOL);
 
         return ret.promise;
@@ -175,6 +164,16 @@ export class TypeScriptServerHost {
                 this._seqToPromises[seq].resolve(response.body);
             } else {
                 this._seqToPromises[seq].reject(response.message);
+            }
+        } else {
+            // If a sequence wasn't specified, it might be a call that returns multiple results
+            // Like 'geterr' - returns both semanticDiag and syntaxDiag
+            console.log("No sequence number returned.")
+
+            if(response.type && response.type === "event") {
+                if(response.event && response.event === "semanticDiag") {
+                    this.emit("semanticDiag", response.body);
+                }
             }
         }
     }

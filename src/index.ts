@@ -6,28 +6,22 @@ import {OmniCompleter} from "./OmniCompleter"
 
 import {SyntaxHighlighter} from "./SyntaxHighlighter"
 import {ErrorManager} from "./ErrorManager"
+import * as _ from "lodash";
 
 declare var vim;
 
 var host = new TypeScriptServerHost();
 var errorManager = new ErrorManager(vim, host);
 
-var cachedContents = "";
-
-vim.on("BufferChanged", (args) => {
-    console.log("BufferChanged: " + JSON.stringify(args));
-    var fileName = args.fileName;
-    var newContents = args.newContents;
-    cachedContents = newContents;
-
-    host.updateFile(args.currentBuffer, newContents);
-    updateSyntaxHighlighting(args.currentBuffer);
-
-    errorManager.checkForErrorsInCurrentBuffer(args.currentBuffer);
-});
-
 vim.omniCompleters.register("typescript", new OmniCompleter(host));
 vim.omniCompleters.register("javascript", new OmniCompleter(host));
+
+vim.on("BufferChanged", (args) => {
+    host.updateFile(args.currentBuffer, args.newContents);
+    _.debounce(() => {
+        updateSyntaxHighlighting(args.currentBuffer);
+    }, 100);
+});
 
 vim.on("BufSavePre", (args) => {
     errorManager.checkForErrorsAcrossProject(args.currentBuffer);

@@ -8,6 +8,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as Promise from "bluebird";
 import {TypeScriptServerHost} from "./TypeScriptServerHost"
+import * as _ from "lodash";
 
 interface IErrorInfo {
     fileName: string;
@@ -22,8 +23,6 @@ export class ErrorManager {
     private _vim: any;
     private _lastErrors: IErrorInfo[] = [];
     private _fileToErrors: { [key: string]: IErrorInfo } = {};
-
-    private _currentTimeout;
 
     constructor(vim: any, host: TypeScriptServerHost) {
         this._vim = vim;
@@ -47,10 +46,9 @@ export class ErrorManager {
 
             this._fileToErrors[file] = errors;
 
-            if (!this._currentTimeout) {
-                this._currentTimeout = setTimeout(() => this._updateErrors(), 500);
-            }
-
+            _.debounce(() => {
+                this._updateErrors()
+            }, 500);
         });
     }
 
@@ -61,8 +59,6 @@ export class ErrorManager {
             this._lastErrors = errors;
             this._vim.setErrors("vim-electrify-typescript", this._lastErrors);
         }
-
-        this._currentTimeout = null;
     }
 
     private _combineErrors(): IErrorInfo[] {

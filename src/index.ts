@@ -8,8 +8,6 @@ import {SyntaxHighlightManager} from "./SyntaxHighlightManager"
 import {ErrorManager} from "./ErrorManager"
 import {QuickInfo} from "./QuickInfo";
 
-declare var vim;
-
 var host = new TypeScriptServerHost();
 var errorManager = new ErrorManager(vim, host);
 var syntaxHighlightManager = new SyntaxHighlightManager(vim, host);
@@ -21,7 +19,6 @@ vim.omniCompleters.register("javascript", new OmniCompleter(host));
 vim.on("BufferChanged", (args) => {
     host.updateFile(args.currentBuffer, args.newContents);
     syntaxHighlightManager.updateSyntaxHighlighting(args.currentBuffer);
-    errorManager.checkForErrorsInCurrentBuffer(args.currentBuffer);
 });
 
 vim.on("BufWritePre", (args) => {
@@ -38,6 +35,10 @@ vim.on("CursorMoved", (args) => {
     quickInfo.showQuickInfo(args);
 });
 
+vim.on("CursorMovedI", (args) => {
+    errorManager.clearErrorOnLine(args.currentBuffer, parseInt(args.line));
+});
+
 vim.addCommand("TSDefinition", (args) => {
     host.getTypeDefinition(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
         val = val[0];
@@ -46,3 +47,18 @@ vim.addCommand("TSDefinition", (args) => {
         vim.echo("Error: " + err);
     });
 });
+
+import * as events from "events";
+
+declare var vim: Vim;
+
+export interface OmniCompletionManager {
+    register(fileType: string, omniCompleter: any);
+}
+
+export interface Vim extends events.EventEmitter {
+    omniCompleters: OmniCompletionManager;
+    addCommand(commandName: string, callbackFunction: Function);
+    openBuffer(bufferPath: string, line?: number, column?: number);
+    echo(message: string);
+}

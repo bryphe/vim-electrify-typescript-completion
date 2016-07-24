@@ -84,7 +84,6 @@ export class OmniCompleter {
         }
     }
 
-
     private _getSignatureHelp(currentBuffer: string, line: number, col: number): Promise<any> {
         var displayPartsParser = new DisplayPartsParser.DisplayPartsParser();
 

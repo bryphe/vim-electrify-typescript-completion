@@ -22,13 +22,14 @@ export class ErrorManager {
     private _host: TypeScriptServerHost;
     private _vim: any;
     private _lastErrors: IErrorInfo[] = [];
-    private _fileToErrors: { [key: string]: IErrorInfo } = {};
+    private _fileToErrors: { [key: string]: IErrorInfo[] } = {};
+    private _updateErrorFn: Function;
 
     constructor(vim: any, host: TypeScriptServerHost) {
         this._vim = vim;
         this._host = host;
 
-        var updateErrorFn = _.throttle(() => this._updateErrors(), 250, { leading: true, trailing: true });
+        this._updateErrorFn = _.throttle(() => this._updateErrors(), 250, { leading: true, trailing: true });
 
         this._host.on("semanticDiag", (diagnostics) => {
             var file = diagnostics.file;
@@ -48,25 +49,18 @@ export class ErrorManager {
 
             this._fileToErrors[file] = errors;
 
-            updateErrorFn();
+            this._updateErrorFn();
         });
     }
 
-    private _updateErrors(): void {
-        var errors = this._combineErrors();
+    public clearErrorOnLine(bufferName: string, line: number): void {
+        if (this._fileToErrors[bufferName]) {
+            var errors = this._fileToErrors[bufferName];
 
-        if (!this._areErrorArraysEqual(errors, this._lastErrors)) {
-            this._lastErrors = errors;
-            this._vim.setErrors("vim-electrify-typescript", this._lastErrors);
+            this._fileToErrors[bufferName] = errors.filter((e) => e.lineNumber !== line);
+
+            this._updateErrorFn();
         }
-    }
-
-    private _combineErrors(): IErrorInfo[] {
-        var ret = [];
-        Object.keys(this._fileToErrors).forEach((k) => {
-            ret = ret.concat(this._fileToErrors[k]);
-        });
-        return ret;
     }
 
     public getErrorOnLine(bufferName: string, line: number): string {
@@ -87,6 +81,23 @@ export class ErrorManager {
 
     public checkForErrorsAcrossProject(bufferName: string): void {
         this._host.getErrorsAcrossProject(bufferName);
+    }
+
+    private _updateErrors(): void {
+        var errors = this._combineErrors();
+
+        if (!this._areErrorArraysEqual(errors, this._lastErrors)) {
+            this._lastErrors = errors;
+            this._vim.setErrors("vim-electrify-typescript", this._lastErrors);
+        }
+    }
+
+    private _combineErrors(): IErrorInfo[] {
+        var ret = [];
+        Object.keys(this._fileToErrors).forEach((k) => {
+            ret = ret.concat(this._fileToErrors[k]);
+        });
+        return ret;
     }
 
     private _areErrorArraysEqual(err1: IErrorInfo[], err2: IErrorInfo[]): boolean {

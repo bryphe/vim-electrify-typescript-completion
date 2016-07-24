@@ -30,6 +30,10 @@ export class QuickInfo {
         this._host.getQuickInfo(args.currentBuffer, parseInt(args.line), parseInt(args.col)).then((val: any) => {
             console.log("Quick info: " + JSON.stringify(val));
             var outputString = val.displayString;
+
+            // Truncate display string if over 100 characters
+            outputString = outputString.substring(0, 100);
+
             outputString = outputString.split("\n").join(" ");
             this._vim.echo(outputString);
         });
